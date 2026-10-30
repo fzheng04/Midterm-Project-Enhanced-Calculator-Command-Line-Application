@@ -41,12 +41,11 @@ def test_calculation_result_starts_as_none():
 
     assert calculation.result is None
 
-
 def test_invalid_calculation_operation():
-    calculation = Calculation("modulus", 10, 3)
+    calculation = Calculation("unknown_operation", 10, 3)
 
     with pytest.raises(
         OperationError,
-        match="Invalid operation: modulus",
+        match="Invalid operation: unknown_operation",
     ):
         calculation.execute()

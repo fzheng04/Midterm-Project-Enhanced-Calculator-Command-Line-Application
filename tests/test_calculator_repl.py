@@ -247,12 +247,11 @@ def test_valid_calculations(command, expected, capsys):
 def test_invalid_operation(capsys):
     repl = CalculatorREPL(StubCalculator())
 
-    assert repl.handle_command("modulus 10 3") is True
+    assert repl.handle_command("unknown_operation 10 3") is True
 
     output = capsys.readouterr().out
 
-    assert "Error: Invalid operation: modulus" in output
-
+    assert "Error: Invalid operation: unknown_operation" in output
 
 def test_invalid_number(capsys):
     repl = CalculatorREPL(StubCalculator())
