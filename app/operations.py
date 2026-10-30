@@ -30,7 +30,14 @@ class Division(Operation):
             raise OperationError("Division by zero is not allowed.")
         return a / b
 
+class Modulus(Operation):
+    """Return the remainder of a division."""
 
+    def execute(self, a: float, b: float) -> float:
+        if b == 0:
+            raise OperationError("Modulus by zero is not allowed.")
+
+        return a % b
 class Power(Operation):
     def execute(self, a: float, b: float) -> float:
         return a ** b
@@ -62,6 +69,7 @@ class OperationFactory:
         "divide": Division,
         "power": Power,
         "root": Root,
+        "modulus": Modulus,
     }
 
     @classmethod
@@ -72,3 +80,4 @@ class OperationFactory:
             raise OperationError(f"Invalid operation: {operation_name}")
 
         return operation_class()
+

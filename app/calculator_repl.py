@@ -10,6 +10,7 @@ VALID_OPERATIONS = {
     "divide",
     "power",
     "root",
+    "modulus",
 }
 
 
@@ -21,7 +22,7 @@ Available operations:
   divide <a> <b>
   power <a> <b>
   root <a> <b>
-
+  modulus <a> <b>
 Available commands:
   help     Show this help menu
   history  Show calculation history

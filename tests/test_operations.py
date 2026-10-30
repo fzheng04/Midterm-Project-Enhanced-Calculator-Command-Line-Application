@@ -1,5 +1,5 @@
 import pytest
-
+from app.operations import Modulus
 from app.exceptions import OperationError
 from app.operations import (
     Addition,
@@ -23,6 +23,9 @@ from app.operations import (
         (Power, 2, 3, 8),
         (Root, 16, 2, 4),
         (Root, 27, 3, 3),
+        (Modulus, 10, 3, 1),
+        (Modulus, 20, 4, 0),
+        (Modulus, 7, 2, 1),
     ],
 )
 def test_operations(operation_class, a, b, expected):
@@ -75,6 +78,7 @@ def test_negative_odd_root():
         ("divide", Division),
         ("power", Power),
         ("root", Root),
+        ("modulus", Modulus),
     ],
 )
 def test_operation_factory(name, expected_class):
@@ -86,10 +90,12 @@ def test_factory_is_case_insensitive():
     operation = OperationFactory.create_operation("ADD")
     assert isinstance(operation, Addition)
 
-
 def test_invalid_operation():
-    with pytest.raises(
-        OperationError,
-        match="Invalid operation: modulus"
-    ):
-        OperationFactory.create_operation("modulus")
+    with pytest.raises(OperationError):
+        OperationFactory.create_operation("unknown_operation")
+
+def test_modulus_by_zero():
+    operation = Modulus()
+
+    with pytest.raises(OperationError, match="Modulus by zero"):
+        operation.execute(10, 0)
