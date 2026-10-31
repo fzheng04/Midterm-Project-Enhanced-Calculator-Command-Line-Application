@@ -12,3 +12,6 @@ class OperationError(CalculatorError):
 
 class ConfigurationError(CalculatorError):
     """Raised when calculator configuration is invalid."""
+
+class HistoryError(CalculatorError):
+    """Raised when calculation history cannot be saved or loaded."""

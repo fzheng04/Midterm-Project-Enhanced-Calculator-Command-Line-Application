@@ -3,7 +3,8 @@ import pandas as pd
 from app.calculation import Calculation
 from app.history import HistoryManager
 
-
+import pytest
+from app.exceptions import HistoryError
 def make_calculation(operation, a, b):
     """Create and execute a calculation for history tests."""
     calculation = Calculation(operation, a, b)
@@ -21,6 +22,7 @@ def test_history_starts_empty():
         "a",
         "b",
         "result",
+        "timestamp",
     ]
 
 
@@ -156,3 +158,84 @@ def test_replace_uses_copy():
     replacement.loc[0, "result"] = 100
 
     assert history.data.loc[0, "result"] == 2
+
+def test_history_includes_timestamp(tmp_path):
+    history = HistoryManager()
+    history.add(make_calculation("add", 5, 3))
+
+    file_path = tmp_path / "history.csv"
+    history.save(str(file_path))
+
+    saved_data = pd.read_csv(file_path)
+
+    assert "timestamp" in saved_data.columns
+    assert pd.notna(saved_data.iloc[0]["timestamp"])
+
+    loaded = HistoryManager()
+    loaded.load(str(file_path))
+
+    assert len(loaded) == 1
+    assert loaded.data.iloc[0]["result"] == 8
+    assert loaded.data.iloc[0]["timestamp"]
+
+
+def test_load_legacy_history(tmp_path):
+    """Older CSV files without timestamps must still load."""
+    file_path = tmp_path / "old_history.csv"
+
+    pd.DataFrame([
+        {
+            "operation": "add",
+            "a": 2,
+            "b": 3,
+            "result": 5,
+        }
+    ]).to_csv(file_path, index=False)
+
+    history = HistoryManager()
+    history.load(str(file_path))
+
+    assert len(history) == 1
+    assert history.data.iloc[0]["result"] == 5
+    assert isinstance(history.data.iloc[0]["timestamp"], str)
+
+
+@pytest.mark.parametrize(
+    "csv_content",
+    [
+        "operation,a,b\nadd,2,3\n",
+        "operation,a,b,result\nadd,hello,3,5\n",
+        "operation,a,b,result\nunknown,2,3,5\n",
+        (
+            "operation,a,b,result,timestamp\n"
+            "add,2,3,5,invalid-date\n"
+        ),
+    ],
+)
+def test_malformed_csv_preserves_history(tmp_path, csv_content):
+    history = HistoryManager()
+    history.add(make_calculation("add", 5, 3))
+
+    file_path = tmp_path / "malformed.csv"
+    file_path.write_text(csv_content, encoding="utf-8")
+
+    with pytest.raises(HistoryError, match="Failed to load history"):
+        history.load(str(file_path))
+
+    # An invalid file must not destroy the previous history.
+    assert len(history) == 1
+    assert history.data.iloc[0]["result"] == 8
+
+
+def test_custom_csv_encoding(tmp_path):
+    file_path = tmp_path / "history_utf16.csv"
+
+    history = HistoryManager(encoding="utf-16")
+    history.add(make_calculation("multiply", 4, 5))
+    history.save(str(file_path))
+
+    loaded = HistoryManager(encoding="utf-16")
+    loaded.load(str(file_path))
+
+    assert len(loaded) == 1
+    assert loaded.data.iloc[0]["result"] == 20

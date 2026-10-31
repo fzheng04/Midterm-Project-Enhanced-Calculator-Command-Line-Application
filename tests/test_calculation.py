@@ -36,13 +36,14 @@ def test_calculation_to_dict():
     calculation = Calculation("add", 2, 3)
     calculation.execute()
 
-    assert calculation.to_dict() == {
-        "operation": "add",
-        "a": 2,
-        "b": 3,
-        "result": 5,
-    }
+    data = calculation.to_dict()
 
+    assert data["operation"] == "add"
+    assert data["a"] == 2
+    assert data["b"] == 3
+    assert data["result"] == 5
+    assert isinstance(data["timestamp"], str)
+    assert data["timestamp"]
 
 def test_calculation_result_starts_as_none():
     calculation = Calculation("add", 1, 2)

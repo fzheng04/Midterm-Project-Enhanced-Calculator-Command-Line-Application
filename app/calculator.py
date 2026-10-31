@@ -53,7 +53,13 @@ class Calculator:
         )
 
         # Initialize history and Memento Pattern
-        self.history = HistoryManager()
+        self.history = HistoryManager(
+            encoding=getattr(
+                self.config,
+                "default_encoding",
+                "utf-8",
+            )
+        )
         self.mementos = MementoManager()
 
         # Initialize Observer Pattern
