@@ -13,6 +13,7 @@ VALID_OPERATIONS = {
     "modulus",
     "int_divide",
     "percent",
+    "abs_diff",
 }
 
 
@@ -27,6 +28,7 @@ Available operations:
   modulus <a> <b>
   int_divide <a> <b>
   percent <a> <b>
+  abs_diff <a> <b>
 Available commands:
   help     Show this help menu
   history  Show calculation history

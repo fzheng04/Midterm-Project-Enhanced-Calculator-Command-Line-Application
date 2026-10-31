@@ -57,6 +57,12 @@ class Percentage(Operation):
             )
 
         return (a / b) * 100
+
+class AbsoluteDifference(Operation):
+    """Calculate the absolute difference between two numbers."""
+
+    def execute(self, a: float, b: float) -> float:
+        return abs(a - b)
 class Power(Operation):
     def execute(self, a: float, b: float) -> float:
         return a ** b
@@ -91,6 +97,7 @@ class OperationFactory:
         "modulus": Modulus,
         "int_divide": IntegerDivision,
         "percent": Percentage,
+        "abs_diff": AbsoluteDifference,
     }
 
     @classmethod

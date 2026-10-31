@@ -51,6 +51,7 @@ class StubCalculator:
             "modulus": lambda: a % b,
             "int_divide": lambda: a // b,
             "percent": lambda: (a / b) * 100,
+            "abs_diff": lambda: abs(a - b),
         }
 
         if operation not in results:
@@ -257,6 +258,11 @@ def test_load_command(capsys):
         ("percent 25 100", 25.0),
         ("percent 50 200", 25.0),
         ("percent 75 150", 50.0),
+        ("abs_diff 10 3", 7.0),
+        ("abs_diff 3 10", 7.0),
+        ("abs_diff -5 3", 8.0),
+        ("abs_diff 5 5", 0.0),
+        
     ],
 )
 def test_valid_calculations(command, expected, capsys):

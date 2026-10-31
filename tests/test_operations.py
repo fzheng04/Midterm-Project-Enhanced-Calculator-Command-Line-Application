@@ -3,6 +3,7 @@ from app.operations import Modulus
 from app.exceptions import OperationError
 from app.operations import IntegerDivision
 from app.operations import Percentage
+from app.operations import AbsoluteDifference
 from app.operations import (
     Addition,
     Subtraction,
@@ -35,6 +36,10 @@ from app.operations import (
         (Percentage, 50, 200, 25),
         (Percentage, 75, 150, 50),
         (Percentage, 0, 100, 0),
+        (AbsoluteDifference, 10, 3, 7),
+        (AbsoluteDifference, 3, 10, 7),
+        (AbsoluteDifference, -5, 3, 8),
+        (AbsoluteDifference, 5, 5, 0),
     ],
 )
 def test_operations(operation_class, a, b, expected):
@@ -90,6 +95,7 @@ def test_negative_odd_root():
         ("modulus", Modulus),
         ("int_divide", IntegerDivision),
         ("percent", Percentage),
+        ("abs_diff", AbsoluteDifference),
     ],
 )
 def test_operation_factory(name, expected_class):

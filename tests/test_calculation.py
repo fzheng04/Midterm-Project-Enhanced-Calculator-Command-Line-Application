@@ -18,6 +18,9 @@ from app.exceptions import OperationError
         ("percent", 25, 100, 25),
         ("percent", 50, 200, 25),
         ("percent", 75, 150, 50),
+        ("abs_diff", 10, 3, 7),
+        ("abs_diff", 3, 10, 7),
+        ("abs_diff", -5, 3, 8),
     ],
 )
 def test_calculation_execute(operation, a, b, expected):
