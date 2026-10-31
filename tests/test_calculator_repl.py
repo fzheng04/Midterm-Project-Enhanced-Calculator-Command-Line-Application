@@ -4,7 +4,7 @@ import pytest
 
 from app.calculator_repl import CalculatorREPL, HELP_TEXT
 from app.exceptions import OperationError
-
+from colorama import Fore
 
 class StubCalculator:
     """Simple calculator stub used for REPL tests."""
@@ -390,3 +390,35 @@ def test_main(monkeypatch):
     main()
 
     assert called["run"] is True
+
+def test_success_output_is_green(capsys):
+    repl = CalculatorREPL(StubCalculator())
+
+    repl.handle_command("add 2 3")
+
+    output = capsys.readouterr().out
+
+    assert f"{Fore.GREEN}Result: 5.0" in output
+
+
+def test_error_output_is_red(capsys):
+    repl = CalculatorREPL(StubCalculator())
+
+    repl.handle_command("add hello 3")
+
+    output = capsys.readouterr().out
+
+    assert f"{Fore.RED}Error:" in output
+
+
+def test_warning_output_is_yellow(capsys):
+    repl = CalculatorREPL(StubCalculator())
+
+    repl.handle_command("")
+
+    output = capsys.readouterr().out
+
+    assert (
+        f"{Fore.YELLOW}Please enter a command."
+        in output
+    )

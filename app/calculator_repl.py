@@ -1,7 +1,7 @@
 from app.calculator import Calculator
 from app.exceptions import CalculatorError, ValidationError
 from app.input_validators import validate_input, validate_operation
-
+from colorama import Fore, Style, just_fix_windows_console
 
 VALID_OPERATIONS = {
     "add",
@@ -49,14 +49,16 @@ class CalculatorREPL:
 
     def show_help(self) -> None:
         """Display available operations and commands."""
-        print(HELP_TEXT)
+        print(f"{Fore.CYAN}{HELP_TEXT}{Style.RESET_ALL}")
 
     def show_history(self) -> None:
         """Display calculation history."""
         history = self.calculator.get_history()
 
         if history.empty:
-            print("No calculation history.")
+            print(
+                f"{Fore.YELLOW}No calculation history.{Style.RESET_ALL}"
+            )
             return
 
         print(history.to_string(index=False))
@@ -69,7 +71,9 @@ class CalculatorREPL:
         user_input = user_input.strip()
 
         if not user_input:
-            print("Please enter a command.")
+            print(
+                f"{Fore.YELLOW}Please enter a command.{Style.RESET_ALL}"
+            )
             return True
 
         parts = user_input.split()
@@ -129,10 +133,10 @@ class CalculatorREPL:
                 b
             )
 
-            print(f"Result: {result}")
+            print(f"{Fore.GREEN}Result: {result}{Style.RESET_ALL}")
 
         except (ValidationError, CalculatorError) as exc:
-            print(f"Error: {exc}")
+            print(f"{Fore.RED}Error: {exc}{Style.RESET_ALL}")
 
         return True
 
@@ -155,6 +159,7 @@ class CalculatorREPL:
 
 def main():
     """Run the calculator application."""
+    just_fix_windows_console()
     repl = CalculatorREPL()
     repl.run()
 
