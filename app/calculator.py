@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-
+from app.logger import Logger
 from app.calculation import Calculation
 from app.calculator_config import CalculatorConfig
 from app.calculator_memento import MementoManager
@@ -45,14 +45,26 @@ class Calculator:
 
     def __init__(self, config=None):
         self.config = config or CalculatorConfig()
+
+        # Configure file logging
+        Logger.configure(
+            getattr(self.config, "log_file", "logs/calculator.log"),
+            getattr(self.config, "default_encoding", "utf-8"),
+        )
+
+        # Initialize history and Memento Pattern
         self.history = HistoryManager()
         self.mementos = MementoManager()
 
+        # Initialize Observer Pattern
         self._observers = []
         self.add_observer(LoggingObserver())
         self.add_observer(AutoSaveObserver())
 
+        # Load previously saved history
         self.history.load(self.config.history_file)
+
+        logger.info("Calculator initialized")
 
     def add_observer(self, observer: CalculatorObserver) -> None:
         """Register an observer."""
@@ -76,6 +88,7 @@ class Calculator:
                 raise ValidationError("Operands must be numbers.")
 
             if not math.isfinite(value):
+                logger.warning("Non-finite operand: %r", value)
                 raise ValidationError("Inputs must be finite numbers.")
 
             if abs(value) > self.config.max_input_value:
@@ -88,7 +101,13 @@ class Calculator:
 
         try:
             result = calculation.execute()
+
+        except OperationError:
+            logger.exception("Operation '%s' failed", operation)
+            raise
+
         except (OverflowError, ZeroDivisionError) as exc:
+            logger.exception("Operation '%s' failed", operation)
             raise OperationError(f"Calculation failed: {exc}") from exc
 
         if isinstance(result, complex) or not math.isfinite(result):

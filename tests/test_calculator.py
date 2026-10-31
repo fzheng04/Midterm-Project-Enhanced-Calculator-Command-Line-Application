@@ -4,7 +4,7 @@ import pandas as pd
 
 from app.calculator import Calculator
 import pytest
-
+from app.exceptions import OperationError, ValidationError
 class DummyConfig:
     """Simple configuration object for calculator tests."""
 
@@ -21,7 +21,8 @@ class DummyConfig:
         self.auto_save = auto_save
         self.precision = precision
         self.max_input_value = max_input_value
-
+        self.log_file = str(history_file.parent / "calculator.log")
+        self.default_encoding = "utf-8"
 class RecordingObserver:
     """Observer used to verify notifications during tests."""
 
@@ -343,3 +344,37 @@ def test_non_finite_inputs(tmp_path, value):
 
     with pytest.raises(ValidationError, match="finite"):
         calculator.calculate("add", value, 5)
+
+def test_calculation_written_to_log(tmp_path):
+    calculator = make_calculator(tmp_path)
+
+    calculator.calculate("add", 2, 3)
+
+    log_file = tmp_path / "calculator.log"
+
+    assert log_file.exists()
+
+    content = log_file.read_text(encoding="utf-8")
+
+    assert "INFO" in content
+    assert "add 2 3 = 5" in content
+
+
+def test_invalid_input_logged(tmp_path, caplog):
+    calculator = make_calculator(tmp_path)
+
+    with caplog.at_level(logging.WARNING):
+        with pytest.raises(ValidationError):
+            calculator.calculate("add", float("inf"), 3)
+
+    assert "Non-finite operand" in caplog.text
+
+
+def test_invalid_operation_logged(tmp_path, caplog):
+    calculator = make_calculator(tmp_path)
+
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(OperationError):
+            calculator.calculate("unknown_operation", 2, 3)
+
+    assert "Operation 'unknown_operation' failed" in caplog.text
