@@ -5,7 +5,7 @@ import pytest
 from app.calculator_repl import CalculatorREPL, HELP_TEXT
 from app.exceptions import OperationError
 from colorama import Fore
-
+from app.exceptions import HistoryError
 class StubCalculator:
     """Simple calculator stub used for REPL tests."""
 
@@ -422,3 +422,37 @@ def test_warning_output_is_yellow(capsys):
         f"{Fore.YELLOW}Please enter a command."
         in output
     )
+
+
+def test_save_command_error(monkeypatch, capsys):
+    calculator = StubCalculator()
+
+    def fail_save():
+        raise HistoryError("Unable to save history")
+
+    monkeypatch.setattr(calculator, "save_history", fail_save)
+
+    repl = CalculatorREPL(calculator)
+
+    assert repl.handle_command("save") is True
+
+    output = capsys.readouterr().out
+
+    assert "Error: Unable to save history" in output
+
+
+def test_load_command_error(monkeypatch, capsys):
+    calculator = StubCalculator()
+
+    def fail_load():
+        raise HistoryError("Unable to load history")
+
+    monkeypatch.setattr(calculator, "load_history", fail_load)
+
+    repl = CalculatorREPL(calculator)
+
+    assert repl.handle_command("load") is True
+
+    output = capsys.readouterr().out
+
+    assert "Error: Unable to load history" in output

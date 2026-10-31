@@ -5,6 +5,8 @@ import pandas as pd
 from app.calculator import Calculator
 import pytest
 from app.exceptions import OperationError, ValidationError
+from app.history import HistoryManager
+from app.exceptions import HistoryError
 class DummyConfig:
     """Simple configuration object for calculator tests."""
 
@@ -420,3 +422,16 @@ def test_infinite_result(tmp_path):
         match="invalid result"
     ):
         calculator.calculate("multiply", 1e308, 1e308)
+
+
+def test_corrupted_history_on_startup(tmp_path, monkeypatch):
+    """Calculator should start even if saved history is corrupted."""
+
+    def fail_load(self, file_path):
+        raise HistoryError("Corrupted history file")
+
+    monkeypatch.setattr(HistoryManager, "load", fail_load)
+
+    calculator = make_calculator(tmp_path)
+
+    assert calculator.get_history().empty
