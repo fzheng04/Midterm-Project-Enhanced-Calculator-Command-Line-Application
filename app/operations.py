@@ -47,6 +47,16 @@ class IntegerDivision(Operation):
                 "Integer division by zero is not allowed."
             )
         return a // b
+class Percentage(Operation):
+    """Calculate a as a percentage of b."""
+
+    def execute(self, a: float, b: float) -> float:
+        if b == 0:
+            raise OperationError(
+                "Percentage division by zero is not allowed."
+            )
+
+        return (a / b) * 100
 class Power(Operation):
     def execute(self, a: float, b: float) -> float:
         return a ** b
@@ -80,6 +90,7 @@ class OperationFactory:
         "root": Root,
         "modulus": Modulus,
         "int_divide": IntegerDivision,
+        "percent": Percentage,
     }
 
     @classmethod

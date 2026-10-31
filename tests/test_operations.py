@@ -2,6 +2,7 @@ import pytest
 from app.operations import Modulus
 from app.exceptions import OperationError
 from app.operations import IntegerDivision
+from app.operations import Percentage
 from app.operations import (
     Addition,
     Subtraction,
@@ -30,6 +31,10 @@ from app.operations import (
         (IntegerDivision, 10, 3, 3),
         (IntegerDivision, 20, 4, 5),
         (IntegerDivision, -10, 3, -4),
+        (Percentage, 25, 100, 25),
+        (Percentage, 50, 200, 25),
+        (Percentage, 75, 150, 50),
+        (Percentage, 0, 100, 0),
     ],
 )
 def test_operations(operation_class, a, b, expected):
@@ -84,6 +89,7 @@ def test_negative_odd_root():
         ("root", Root),
         ("modulus", Modulus),
         ("int_divide", IntegerDivision),
+        ("percent", Percentage),
     ],
 )
 def test_operation_factory(name, expected_class):
@@ -114,3 +120,11 @@ def test_integer_division_by_zero():
         match="Integer division by zero is not allowed."
     ):
         operation.execute(10, 0)
+def test_percentage_by_zero():
+    operation = Percentage()
+
+    with pytest.raises(
+        OperationError,
+        match="Percentage division by zero is not allowed."
+    ):
+        operation.execute(25, 0)

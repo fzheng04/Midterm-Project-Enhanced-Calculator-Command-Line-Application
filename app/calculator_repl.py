@@ -12,6 +12,7 @@ VALID_OPERATIONS = {
     "root",
     "modulus",
     "int_divide",
+    "percent",
 }
 
 
@@ -25,6 +26,7 @@ Available operations:
   root <a> <b>
   modulus <a> <b>
   int_divide <a> <b>
+  percent <a> <b>
 Available commands:
   help     Show this help menu
   history  Show calculation history

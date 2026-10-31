@@ -1,3 +1,4 @@
+
 import pandas as pd
 import pytest
 
@@ -23,25 +24,41 @@ class StubCalculator:
             raise OperationError(
                 "Division by zero is not allowed."
             )
+
         if operation == "modulus" and b == 0:
-            raise OperationError("Modulus by zero is not allowed.")
+            raise OperationError(
+                "Modulus by zero is not allowed."
+            )
 
         if operation == "int_divide" and b == 0:
             raise OperationError(
                 "Integer division by zero is not allowed."
             )
+
+        if operation == "percent" and b == 0:
+            raise OperationError(
+                "Percentage division by zero is not allowed."
+            )
+
+        # Use lambdas so only the requested operation executes.
         results = {
-            "add": a + b,
-            "subtract": a - b,
-            "multiply": a * b,
-            "divide": a / b,
-            "power": a ** b,
-            "root": a ** (1 / b),
-            "modulus": a % b,
-            "int_divide": a // b,
+            "add": lambda: a + b,
+            "subtract": lambda: a - b,
+            "multiply": lambda: a * b,
+            "divide": lambda: a / b,
+            "power": lambda: a ** b,
+            "root": lambda: a ** (1 / b),
+            "modulus": lambda: a % b,
+            "int_divide": lambda: a // b,
+            "percent": lambda: (a / b) * 100,
         }
 
-        result = results[operation]
+        if operation not in results:
+            raise OperationError(
+                f"Invalid operation: {operation}"
+            )
+
+        result = results[operation]()
 
         new_row = pd.DataFrame(
             [
@@ -174,7 +191,6 @@ def test_undo_success(capsys):
     repl = CalculatorREPL(calculator)
 
     assert repl.handle_command("undo") is True
-
     assert "Undo successful." in capsys.readouterr().out
 
 
@@ -185,7 +201,6 @@ def test_undo_failure(capsys):
     repl = CalculatorREPL(calculator)
 
     assert repl.handle_command("undo") is True
-
     assert "Nothing to undo." in capsys.readouterr().out
 
 
@@ -196,7 +211,6 @@ def test_redo_success(capsys):
     repl = CalculatorREPL(calculator)
 
     assert repl.handle_command("redo") is True
-
     assert "Redo successful." in capsys.readouterr().out
 
 
@@ -207,7 +221,6 @@ def test_redo_failure(capsys):
     repl = CalculatorREPL(calculator)
 
     assert repl.handle_command("redo") is True
-
     assert "Nothing to redo." in capsys.readouterr().out
 
 
@@ -216,7 +229,6 @@ def test_save_command(capsys):
     repl = CalculatorREPL(calculator)
 
     assert repl.handle_command("save") is True
-
     assert calculator.saved is True
     assert "History saved." in capsys.readouterr().out
 
@@ -226,7 +238,6 @@ def test_load_command(capsys):
     repl = CalculatorREPL(calculator)
 
     assert repl.handle_command("load") is True
-
     assert calculator.loaded is True
     assert "History loaded." in capsys.readouterr().out
 
@@ -243,6 +254,9 @@ def test_load_command(capsys):
         ("modulus 10 3", 1.0),
         ("int_divide 10 3", 3.0),
         ("int_divide 20 4", 5.0),
+        ("percent 25 100", 25.0),
+        ("percent 50 200", 25.0),
+        ("percent 75 150", 50.0),
     ],
 )
 def test_valid_calculations(command, expected, capsys):
@@ -263,6 +277,7 @@ def test_invalid_operation(capsys):
     output = capsys.readouterr().out
 
     assert "Error: Invalid operation: unknown_operation" in output
+
 
 def test_invalid_number(capsys):
     repl = CalculatorREPL(StubCalculator())
@@ -293,6 +308,16 @@ def test_calculator_error(capsys):
     output = capsys.readouterr().out
 
     assert "Division by zero is not allowed." in output
+
+
+def test_percentage_by_zero_repl(capsys):
+    repl = CalculatorREPL(StubCalculator())
+
+    assert repl.handle_command("percent 25 0") is True
+
+    output = capsys.readouterr().out
+
+    assert "Percentage division by zero" in output
 
 
 def test_run_until_exit(monkeypatch, capsys):

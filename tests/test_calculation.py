@@ -15,6 +15,9 @@ from app.exceptions import OperationError
         ("root", 81, 2, 9),
         ("int_divide", 10, 3, 3),
         ("int_divide", 20, 4, 5),
+        ("percent", 25, 100, 25),
+        ("percent", 50, 200, 25),
+        ("percent", 75, 150, 50),
     ],
 )
 def test_calculation_execute(operation, a, b, expected):
