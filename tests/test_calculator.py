@@ -378,3 +378,45 @@ def test_invalid_operation_logged(tmp_path, caplog):
             calculator.calculate("unknown_operation", 2, 3)
 
     assert "Operation 'unknown_operation' failed" in caplog.text
+
+
+@pytest.mark.parametrize("value", [True, "hello", None])
+def test_invalid_operand_types(tmp_path, value):
+    calculator = make_calculator(tmp_path)
+
+    with pytest.raises(
+        ValidationError,
+        match="Operands must be numbers"
+    ):
+        calculator.calculate("add", value, 2)
+
+
+def test_power_overflow(tmp_path):
+    calculator = make_calculator(tmp_path)
+
+    with pytest.raises(
+        OperationError,
+        match="Calculation failed"
+    ):
+        calculator.calculate("power", 1000000.0, 1000.0)
+
+
+def test_complex_result(tmp_path):
+    calculator = make_calculator(tmp_path)
+
+    with pytest.raises(
+        OperationError,
+        match="invalid result"
+    ):
+        calculator.calculate("power", -2.0, 0.5)
+
+
+def test_infinite_result(tmp_path):
+    calculator = make_calculator(tmp_path)
+    calculator.config.max_input_value = 1e308
+
+    with pytest.raises(
+        OperationError,
+        match="invalid result"
+    ):
+        calculator.calculate("multiply", 1e308, 1e308)

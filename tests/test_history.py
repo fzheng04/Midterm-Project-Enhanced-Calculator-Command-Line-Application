@@ -239,3 +239,43 @@ def test_custom_csv_encoding(tmp_path):
 
     assert len(loaded) == 1
     assert loaded.data.iloc[0]["result"] == 20
+
+def test_save_failure(tmp_path, monkeypatch):
+    history = HistoryManager()
+    history.add(make_calculation("add", 2, 3))
+
+    def fail_write(self, *args, **kwargs):
+        raise OSError("Disk full")
+
+    monkeypatch.setattr(pd.DataFrame, "to_csv", fail_write)
+
+    with pytest.raises(
+        HistoryError,
+        match="Failed to save history"
+    ):
+        history.save(str(tmp_path / "history.csv"))
+
+
+@pytest.mark.parametrize(
+    "csv_content",
+    [
+        "operation,a,b,result\n,2,3,5\n",
+        "operation,a,b,result\nadd,inf,3,5\n",
+        "operation,a,b,result\nadd,2,3,nan\n",
+        (
+            "operation,a,b,result,timestamp\n"
+            "add,2,3,5,\n"
+        ),
+    ],
+)
+def test_additional_invalid_csv(tmp_path, csv_content):
+    file_path = tmp_path / "invalid.csv"
+    file_path.write_text(csv_content, encoding="utf-8")
+
+    history = HistoryManager()
+
+    with pytest.raises(
+        HistoryError,
+        match="Failed to load history"
+    ):
+        history.load(str(file_path))
