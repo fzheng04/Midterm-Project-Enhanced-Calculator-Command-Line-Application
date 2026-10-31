@@ -23,7 +23,13 @@ class StubCalculator:
             raise OperationError(
                 "Division by zero is not allowed."
             )
+        if operation == "modulus" and b == 0:
+            raise OperationError("Modulus by zero is not allowed.")
 
+        if operation == "int_divide" and b == 0:
+            raise OperationError(
+                "Integer division by zero is not allowed."
+            )
         results = {
             "add": a + b,
             "subtract": a - b,
@@ -31,6 +37,8 @@ class StubCalculator:
             "divide": a / b,
             "power": a ** b,
             "root": a ** (1 / b),
+            "modulus": a % b,
+            "int_divide": a // b,
         }
 
         result = results[operation]
@@ -232,6 +240,9 @@ def test_load_command(capsys):
         ("divide 10 2", 5.0),
         ("power 2 3", 8.0),
         ("root 81 2", 9.0),
+        ("modulus 10 3", 1.0),
+        ("int_divide 10 3", 3.0),
+        ("int_divide 20 4", 5.0),
     ],
 )
 def test_valid_calculations(command, expected, capsys):

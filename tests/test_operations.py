@@ -1,6 +1,7 @@
 import pytest
 from app.operations import Modulus
 from app.exceptions import OperationError
+from app.operations import IntegerDivision
 from app.operations import (
     Addition,
     Subtraction,
@@ -26,6 +27,9 @@ from app.operations import (
         (Modulus, 10, 3, 1),
         (Modulus, 20, 4, 0),
         (Modulus, 7, 2, 1),
+        (IntegerDivision, 10, 3, 3),
+        (IntegerDivision, 20, 4, 5),
+        (IntegerDivision, -10, 3, -4),
     ],
 )
 def test_operations(operation_class, a, b, expected):
@@ -79,6 +83,7 @@ def test_negative_odd_root():
         ("power", Power),
         ("root", Root),
         ("modulus", Modulus),
+        ("int_divide", IntegerDivision),
     ],
 )
 def test_operation_factory(name, expected_class):
@@ -98,4 +103,14 @@ def test_modulus_by_zero():
     operation = Modulus()
 
     with pytest.raises(OperationError, match="Modulus by zero"):
+        operation.execute(10, 0)
+
+
+def test_integer_division_by_zero():
+    operation = IntegerDivision()
+
+    with pytest.raises(
+        OperationError,
+        match="Integer division by zero is not allowed."
+    ):
         operation.execute(10, 0)

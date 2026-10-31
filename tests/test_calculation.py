@@ -13,6 +13,8 @@ from app.exceptions import OperationError
         ("divide", 12, 3, 4),
         ("power", 2, 4, 16),
         ("root", 81, 2, 9),
+        ("int_divide", 10, 3, 3),
+        ("int_divide", 20, 4, 5),
     ],
 )
 def test_calculation_execute(operation, a, b, expected):

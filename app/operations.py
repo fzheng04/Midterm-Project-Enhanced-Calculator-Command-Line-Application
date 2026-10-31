@@ -38,6 +38,15 @@ class Modulus(Operation):
             raise OperationError("Modulus by zero is not allowed.")
 
         return a % b
+class IntegerDivision(Operation):
+    """Perform integer division."""
+
+    def execute(self, a: float, b: float) -> float:
+        if b == 0:
+            raise OperationError(
+                "Integer division by zero is not allowed."
+            )
+        return a // b
 class Power(Operation):
     def execute(self, a: float, b: float) -> float:
         return a ** b
@@ -70,6 +79,7 @@ class OperationFactory:
         "power": Power,
         "root": Root,
         "modulus": Modulus,
+        "int_divide": IntegerDivision,
     }
 
     @classmethod
