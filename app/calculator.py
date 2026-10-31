@@ -7,7 +7,7 @@ from app.calculator_memento import MementoManager
 from app.history import HistoryManager
 import math
 from app.exceptions import ValidationError, OperationError
-
+from app.exceptions import ValidationError, OperationError, HistoryError
 logger = logging.getLogger(__name__)
 
 
@@ -68,7 +68,12 @@ class Calculator:
         self.add_observer(AutoSaveObserver())
 
         # Load previously saved history
-        self.history.load(self.config.history_file)
+        try:
+            self.history.load(self.config.history_file)
+        except HistoryError as exc:
+            logger.warning(
+                "Could not load saved history: %s", exc
+            )
 
         logger.info("Calculator initialized")
 

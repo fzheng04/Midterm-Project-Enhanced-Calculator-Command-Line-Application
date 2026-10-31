@@ -111,13 +111,19 @@ class CalculatorREPL:
             return True
 
         if command == "save":
-            self.calculator.save_history()
-            print("History saved.")
+            try:
+                self.calculator.save_history()
+                print("History saved.")
+            except CalculatorError as exc:
+                print(f"{Fore.RED}Error: {exc}{Style.RESET_ALL}")
             return True
 
         if command == "load":
-            self.calculator.load_history()
-            print("History loaded.")
+            try:
+                self.calculator.load_history()
+                print("History loaded.")
+            except CalculatorError as exc:
+                print(f"{Fore.RED}Error: {exc}{Style.RESET_ALL}")
             return True
 
         try:
