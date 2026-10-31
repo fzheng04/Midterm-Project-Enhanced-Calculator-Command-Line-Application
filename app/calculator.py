@@ -5,7 +5,8 @@ from app.calculation import Calculation
 from app.calculator_config import CalculatorConfig
 from app.calculator_memento import MementoManager
 from app.history import HistoryManager
-
+import math
+from app.exceptions import ValidationError, OperationError
 
 logger = logging.getLogger(__name__)
 
@@ -68,9 +69,33 @@ class Calculator:
             observer.update(self, calculation)
 
     def calculate(self, operation: str, a: float, b: float) -> float:
-        """Perform a calculation and add it to history."""
+        """Perform a validated calculation and save it to history."""
+
+        for value in (a, b):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise ValidationError("Operands must be numbers.")
+
+            if not math.isfinite(value):
+                raise ValidationError("Inputs must be finite numbers.")
+
+            if abs(value) > self.config.max_input_value:
+                raise ValidationError(
+                    f"Input exceeds maximum allowed value: "
+                    f"{self.config.max_input_value}"
+                )
+
         calculation = Calculation(operation, a, b)
-        result = calculation.execute()
+
+        try:
+            result = calculation.execute()
+        except (OverflowError, ZeroDivisionError) as exc:
+            raise OperationError(f"Calculation failed: {exc}") from exc
+
+        if isinstance(result, complex) or not math.isfinite(result):
+            raise OperationError("Calculation produced an invalid result.")
+
+        result = round(result, self.config.precision)
+        calculation.result = result
 
         self.mementos.save_state(self.history.data)
 
@@ -78,8 +103,8 @@ class Calculator:
         self._limit_history()
 
         self._notify_observers(calculation)
-
         return result
+    
 
     def get_history(self):
         """Return the current calculation history."""

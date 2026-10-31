@@ -13,11 +13,14 @@ class DummyConfig:
         history_file,
         max_history=100,
         auto_save=False,
+        precision=4,
+        max_input_value=1000000,
     ):
         self.history_file = str(history_file)
         self.max_history = max_history
         self.auto_save = auto_save
-
+        self.precision = precision
+        self.max_input_value = max_input_value
 
 class RecordingObserver:
     """Observer used to verify notifications during tests."""
@@ -308,3 +311,35 @@ def test_undo_redo_autosaves(tmp_path, action, expected_rows):
     restarted = make_calculator(tmp_path, auto_save=True)
 
     assert len(restarted.get_history()) == expected_rows
+
+from app.exceptions import ValidationError
+
+
+def test_calculation_precision(tmp_path):
+    calculator = make_calculator(tmp_path)
+
+    result = calculator.calculate("divide", 10, 3)
+
+    assert result == 3.3333
+    assert calculator.get_history().iloc[0]["result"] == 3.3333
+
+
+def test_input_exceeds_maximum(tmp_path):
+    calculator = make_calculator(tmp_path)
+
+    with pytest.raises(ValidationError, match="exceeds maximum"):
+        calculator.calculate("add", 1000001, 5)
+
+
+def test_input_at_maximum(tmp_path):
+    calculator = make_calculator(tmp_path)
+
+    assert calculator.calculate("subtract", 1000000, 1) == 999999
+
+
+@pytest.mark.parametrize("value", [float("inf"), float("nan")])
+def test_non_finite_inputs(tmp_path, value):
+    calculator = make_calculator(tmp_path)
+
+    with pytest.raises(ValidationError, match="finite"):
+        calculator.calculate("add", value, 5)
